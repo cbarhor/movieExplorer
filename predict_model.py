@@ -123,8 +123,6 @@ class MoviePredictor():
         df = self.df.copy()
         sns.pairplot(df,diag_kind='hist')
         plt.show()
-        sns.pairplot(df,hue='gross')
-        plt.show()
 
 
             
@@ -410,12 +408,6 @@ class MoviePredictor():
         """
         coeff = pd.DataFrame(index=features, columns=['Coefficients'], data=linreg.coef_)
         print(coeff)
-        print("\n")
-        
-        
-        
-        
-        
         
         
     def useKmeans(self, features=['gross','budget'],n_clusters = 2):
@@ -499,25 +491,3 @@ if __name__ == "__main__":
     moviePredictor.useKmeans()     
     moviePredictor.useLinearRegression()  
 
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        

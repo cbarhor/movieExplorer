@@ -179,8 +179,7 @@ class MovieExplorer():
             
         self.checkNumericCorrelation()
         self.checkAllCorrelation()
-        # self.showPairPlot() 
-        # !!!
+        self.showPairPlot() 
         
     def showPairPlot(self):
         """
