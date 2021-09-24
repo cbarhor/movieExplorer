@@ -52,7 +52,8 @@ class MoviePredictor():
         #Se eliminan las columnas que no se van a emplear por estar excluídas del reto
         df.drop('director', axis=1, inplace=True)
         df.drop('star', axis=1, inplace=True)
-        df.drop('writer', axis=1, inplace=True)  
+        df.drop('writer', axis=1, inplace=True) 
+        
         #En 2020 los datos sufren una anomalía por culpa de la pandemia, se descartan
         df = df[df.year != 2020]
 
