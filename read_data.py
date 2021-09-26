@@ -12,9 +12,25 @@ import seaborn as sns
 from scipy import stats
 plt.style.use('seaborn')
 
+class DataProcessor:
 
-class MovieExplorer():
     def __init__(self, path="./Data/movies.csv"):
+        """
+        Clase empleada para leer y preprocesar los datos de películas.
+        Se leen el fichero csv, se limpian los datos y se realiza una
+        primer exploración estadística para conocer las características del
+        conjunto de datos
+
+        Parameters
+        ----------
+        path : str, optional
+            ruta relativa hasta los datos, en formato csv. The default is "./Data/movies.csv".
+
+        Returns
+        -------
+        None.
+
+        """
         self.df = self.read_and_clean(path)
         self.preprocess()
         
@@ -154,7 +170,6 @@ class MovieExplorer():
         None.
 
         """
-        # fig = plt.figure(figsize=(25,10))        
         sns.displot(df[str(variable_name)],bins=12)
         plt.title('Distribución de la variable {}'.format(variable_name), loc='left', fontsize=18, pad=20)
         plt.show()        
@@ -179,22 +194,7 @@ class MovieExplorer():
             
         self.checkNumericCorrelation()
         self.checkAllCorrelation()
-        self.showPairPlot() 
-        
-    def showPairPlot(self):
-        """
-        Método empleado para mostrar las relaciones entre las variables del
-        dataFrame
 
-        Returns
-        -------
-        None.
-
-        """
-        df = self.df.copy()
-        sns.pairplot(df,diag_kind='hist')
-        plt.show()
-        
     def checkNumericCorrelation(self):
         """
         Método empleado para estudiar la correlación entre las variables 
@@ -244,16 +244,44 @@ class MovieExplorer():
         top_corr = high_corr.sort_values(ascending=False) 
         print(top_corr.head(10))
     
-#%%
+
+        
+#%%        
 #Exploratory Data Analysis (EDA):
+class EDAAnalyzer():
+    def __init__(self, df):
+        """
+        Clase empleada para realizar el analisis EDA del conjunto de datos
+
+        Parameters
+        ----------
+        df : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
+        self.df = df
+
+
+        
     def makeEDAnalysis(self):
+        """
+        Método empleado a modo de pipeline para realizar el análisis EDA
+
+        Returns
+        -------
+        None.
+
+        """
        #Explore dataset:
-        # By years (2020==pandemic):
+        # By years:
         self.plotRatingvsYears()
         self.plotNumbervsYear()
         self.plotYearlyGrossPercentage()
-        self.plotCountryvsNumberByYear()
-        #By year & month:
+        #By month:
         self.plotBestMothbyYear()    
         #By film:
         self.plotTop10GrossMovies()
@@ -261,49 +289,27 @@ class MovieExplorer():
         self.plotRemakevsGross()
         #By companies:
         self.plotCompaniesGrossandBudget()
-        self.plotCompaniesGrossandGenre()
-        self.plotCompaniesGrossandGenreMean()
-        
+        self.plotCompaniesGrossandGenre()       
         #By rating:
         self.plotRatings()  
-        self.plotRatingByGenere()
         self.plotRatingvsGross()  
-        self.plotRatingvsRatio()
-        
+        self.plotRatingvsRatio()        
         #By genre:
         self.plotNumbervsGenre()
-        self.plotGenrevsNumber()
-        self.plotGenrevsGross()
-        self.plotGenrevsBudget()
-        self.plotGenrevsGrossBudgetRatio()
-        
         self.plotGrossvsGenreBox()
         self.plotBudgetvsGenreBox()
         self.plotGenrevsRatioBox()
-        self.plotBestMothbyGenre()
-        
+        self.plotBestMothbyGenre()        
         self.plotGenrevsYears()
-        self.plotGenrevsNumberByYear()
-        self.plotGenrevsIMDB()
-        
-        #By incomes (gross-budget):
-        self.plotIncomes()
-        
+        self.plotGenrevsNumberByYear()       
+        self.plotIncomes()        
         #By score:
         self.plotGreaterIMDBvsGross()
         self.plotGreaterGrossvsIMDB()
         self.plotBudgetvsGrossvsScore()
         self.plotGrossvsIMDB()
         self.plotBudgetvsIMDB()
-        self.plotIMDBvsYear()
         self.plotIMDBvsGenre()
-        
-        #By country:
-        self.plotProductionCountryvsBudget()
-        self.plotCountryvsGross()
-        self.plotCountryvsNumber()
-        self.plotReleaseCountryvsGross()
-        
         #By runtime:
         self.plotRuntimevsGross()
         self.plotRuntimevsBudget()    
@@ -397,57 +403,6 @@ class MovieExplorer():
         plt.show()
 
 
-
-
-    def plotCompaniesGrossandGenreMean(self):
-        """
-        Método empleado para graficar la taquilla media y la cantidad media que le 
-        pertenece a cada género
-
-        Returns
-        -------
-        None.
-
-        """
-        df = self.df.copy()               
-        pivot_movie = df.groupby(['company','genre'], as_index=False)['gross'].median().pivot(index='company',columns='genre', values='gross').fillna(0)
-        gross_sum = pivot_movie.sum(axis=1)
-        pivot_movie['gross_sum'] = gross_sum
-        top_gross_company = pivot_movie.sort_values(by='gross_sum', ascending = False).head(10)
-        top_gross_company.sort_values(by='gross_sum', ascending =True, inplace=True)
-        top_gross_company.drop('gross_sum', axis=1, inplace=True)
-        
-        top_gross_company.plot(kind='barh', stacked=True, figsize=(30,15))
-        plt.xlabel("Taquilla", fontsize=20, labelpad=10)
-        plt.ylabel("Compañia", fontsize=20, labelpad=10)
-        plt.ticklabel_format(axis="x", style="sci", scilimits=(10^3,10^3))
-        plt.xticks(fontsize=16)
-        plt.yticks(fontsize=16)
-        plt.title('Taquilla media de cada compañía según género', pad=20, fontsize=26)
-        plt.legend(fontsize=16)
-        plt.show()
-
-
-    def plotRatingByGenere(self):
-        """
-        Método empleado para graficar la cantidad de películas que hay en el dataset 
-        distribuidas por género y clasificación de edad
-
-        Returns
-        -------
-        None.
-
-        """
-        df = self.df.copy()
-        sns.countplot(x = 'rating',data = df , hue='genre')
-        plt.xlabel("Clasificación (edad)", fontsize=20, labelpad=10)
-        plt.xticks(fontsize=16,rotation=90)
-        plt.yticks(fontsize=16)
-        plt.title('Cantidad de películas por clasificación y género', pad=20, fontsize=26)        
-        plt.legend(loc='upper center')
-        plt.show()
-
-
     def plotMoviesGrossandBudget(self):
         """
         Método empleado para graficar la taquilla y el presupesto empleado
@@ -508,37 +463,6 @@ class MovieExplorer():
         plt.title('Taquilla vs Presupuesto', size=20, pad=10)
         cbar = plt.colorbar()
         cbar.set_label('IMDb', labelpad=10, size=14)
-        plt.show()
-
-    # def processGenre(self):
-    #     df = self.df.copy()
-    #     movie_genre_gross = df.groupby(['genre'])['gross'].median().to_frame().reset_index().sort_values('gross', ascending = False).head(19)
-    #     movie_genre_gross['genre'].to_list()
-    #     print(movie_genre_gross)        
-    #     df = self.df.copy()
-    #     movie_genre_IMDB = df.groupby(['genre'])['score'].median().to_frame().reset_index().sort_values('score', ascending = False).head(19)
-    #     movie_genre_IMDB['genre'].to_list()
-    #     print(movie_genre_IMDB)
-                
-
-    def plotGenrevsGross(self):
-        """
-        Método empleado para graficar la taquilla media que recauda cada
-        película según su género
-
-        Returns
-        -------
-        None.
-
-        """
-        df = self.df.copy()
-        plt.figure(figsize=(25,10))
-        genre_vs_gross = df.groupby(['genre'])['gross'].median().reset_index().sort_values('gross', ascending = False).head(8)
-        sns.barplot(x='genre', y ='gross', data=genre_vs_gross)
-        plt.xlabel('Género')
-        plt.ylabel('Taquilla')
-        plt.title('Taquilla media por género', loc='left', fontsize=18, pad=20)
-        plt.ticklabel_format(axis="y", style="sci", scilimits=(10^3,10^3))
         plt.show()
         
     def plotRatings(self):
@@ -603,44 +527,6 @@ class MovieExplorer():
         ax.set_xlabel('Clasificación (edad)', fontsize=20)     
         plt.show()
         
-    def plotGenrevsBudget(self):
-        """
-        Método empleado para graficar el presupuesto medio de cada película
-        según su género
-
-        Returns
-        -------
-        None.
-
-        """
-        df = self.df.copy()
-        plt.figure(figsize=(25,10))
-        genre_vs_budget = df.groupby(['genre'])['budget'].median().reset_index().sort_values('budget', ascending = False).head(8)
-        sns.barplot(x='genre', y ='budget', data=genre_vs_budget)
-        plt.xlabel('Género')
-        plt.ylabel('Presupuesto')
-        plt.title('Presupuesto medio según género', loc='left', fontsize=18, pad=20)
-        plt.ticklabel_format(axis="y", style="sci", scilimits=(10^3,10^3))        
-        plt.show()
-        
-    def plotGenrevsGrossBudgetRatio(self):
-        """
-        Método empleado para graficar la relación media entre la taquilla recaudada
-        y el presupuesto de cada película según su género. Barplot
-
-        Returns
-        -------
-        None.
-
-        """
-        df = self.df.copy()
-        plt.figure(figsize=(25,10))       
-        mean_ratio_df = df.groupby(['genre'])['ratio'].median().to_frame().reset_index().sort_values('ratio',ascending=False).head(10)
-        sns.barplot(x='genre', y ='ratio', data=mean_ratio_df)
-        plt.xlabel('Género')
-        plt.ylabel('Ratio Taquilla/Presupuesto')
-        plt.title('Ratio Taquilla/Presupuesto según género', loc='left', fontsize=18, pad=20)
-        plt.show()
         
     def plotGenrevsRatioBox(self):
         """
@@ -708,48 +594,6 @@ class MovieExplorer():
         ax.set_ylabel('Taquilla', fontsize=20, labelpad=10)
         ax.set_xlabel('Año', fontsize=20, labelpad=10)
         plt.show()
-        # plt.ticklabel_format(axis="y", style="sci", scilimits=(10^3,10^3))
-        
-
-    def plotGenrevsIMDB(self):
-        """
-        Método empleado para graficar lapuntuación IMDb según el género de las
-        películas
-
-        Returns
-        -------
-        None.
-
-        """
-        plt.figure(figsize=(25,10))
-        ax = sns.histplot(self.df, x="genre", y="score",multiple='stack', bins=19,  hue='genre')
-        ax.set_title('IMDb según género', fontsize=24, pad=10)
-        ax.set_ylabel('IMDb', fontsize=20, labelpad=10)
-        ax.set_xlabel('Género', fontsize=20, labelpad=10)
-        plt.show()
-        
-    def plotIMDBvsYear(self):
-        """
-        Método empleado para graficar la tendencia con los años en la puntuación
-        media de las películas según su género
-
-        Returns
-        -------
-        None.
-
-        """
-        df = self.df.copy()
-        imdb_by_year_and_genre = df.groupby(['year','genre'])['score'].median().unstack().fillna(method="ffill")        
-        plt.figure(figsize=(25,10))
-        ax = sns.lineplot(data=imdb_by_year_and_genre, dashes=False, lw=3, palette='Set2')
-        leg = ax.legend(fontsize=18)
-        for line in leg.get_lines():
-            line.set_linewidth(5.0)
-        ax.tick_params(axis='both', labelsize=16)
-        ax.set_title('Tendencia IMDb según género', fontsize=24, pad=10)
-        ax.set_ylabel('IMDB', fontsize=20, labelpad=10)
-        ax.set_xlabel('Año', fontsize=20, labelpad=10)
-        plt.show()
         
     def plotIMDBvsGenre(self):
         """
@@ -805,21 +649,6 @@ class MovieExplorer():
         ax.set_ylabel('Presupuesto', fontsize=20)
         ax.set_xlabel('Género', fontsize=20)         
         
-    # def getIncomesRanking(self):
-    #     """
-    #     Método empleado para graficar 
-
-    #     Returns
-    #     -------
-    #     None.
-
-    #     """
-    #     df = self.df.copy()
-    #     movie_incomes_by_genre = df.groupby(['genre'])['income'].mean().to_frame().reset_index().sort_values('income', ascending = False).head(19)
-    #     movie_incomes_by_genre['genre'].to_list()
-    #     print(movie_incomes_by_genre)
-    #     # self.plotIncomes()
-    
         
     def plotIncomes(self):
         """
@@ -842,17 +671,9 @@ class MovieExplorer():
         ax.set_title('Tendencia de beneficio neto según el género', fontsize=24, pad=10)
         ax.set_ylabel('Beneficio', fontsize=20, labelpad=10)
         ax.set_xlabel('Año', fontsize=20, labelpad=10)
-        # plt.ticklabel_format(axis="y", style="sci", scilimits=(10^3,10^3))
         plt.show()
         
 
-    # def getBestMonthByGenre(self):
-        
-    #     df = self.df.copy()
-    #     movie_gross_by_month = df.groupby(['month','genre'])['gross'].median().to_frame().reset_index().sort_values('gross', ascending = False).head(19)
-    #     movie_gross_by_month['genre'].to_list()
-    #     print(movie_gross_by_month)
-    #     # self.plotBestMothbyGenre()
 
     def plotBestMothbyGenre(self):
         """
@@ -994,131 +815,6 @@ class MovieExplorer():
         plt.title('Cantidad de películas estrenadas por año', loc='left', fontsize=18, pad=20)
         plt.show()
         
-    def plotCountryvsGross(self):
-        """
-        Método empleado para graficar la taquilla media de cada
-        película según su país de preducción
-
-        Returns
-        -------
-        None.
-
-        """
-        df = self.df.copy()
-        plt.figure(figsize=(10,8))
-        country_mean_gross = df.groupby(['country'])['gross'].median().to_frame().reset_index().sort_values('gross', ascending = False).head(8)
-        sns.barplot(x='country', y ='gross', data=country_mean_gross)
-        plt.xticks(rotation=45)
-        plt.xlabel('País de producción')
-        plt.ylabel('Taquilla')
-        plt.title('Taquilla media según el país de producción', loc='left', fontsize=18, pad=20)
-        plt.show()
-                
-    def plotProductionCountryvsBudget(self):
-        """
-        Método empleado para graficar el presupuesto medio de cada película
-        según su país de producción
-
-        Returns
-        -------
-        None.
-
-        """
-        df = self.df.copy()
-        plt.figure(figsize=(10,8))
-        country_mean_gross = df.groupby(['country'])['budget'].median().to_frame().reset_index().sort_values('budget', ascending = False).head(8)
-        sns.barplot(x='country', y ='budget', data=country_mean_gross)
-        plt.xticks(rotation=45)
-        plt.xlabel('País de producción')
-        plt.ylabel('Presupuesto')
-        plt.title('Presupuesto medio según el país de producción', loc='left', fontsize=18, pad=20)
-        plt.show()
-                
-    def plotReleaseCountryvsGross(self):
-        """
-        Método empleado para graficar la taquilla media de cada 
-        película según su país de estreno
-
-        Returns
-        -------
-        None.
-
-        """
-        df = self.df.copy()
-        plt.figure(figsize=(10,8))
-        country_mean_gross = df.groupby(['rel_country'])['gross'].median().to_frame().reset_index().sort_values('gross', ascending = False).head(8)
-        sns.barplot(x='rel_country', y ='gross', data=country_mean_gross)
-        plt.xticks(rotation=45)
-        plt.xlabel('País de estreno')
-        plt.ylabel('Taquilla')
-        plt.title('Taquilla media según el país de estreno', loc='left', fontsize=18, pad=20)
-        plt.show()        
-        
-    def plotCountryvsNumber(self):
-        """
-        Método empleado para graficar la cantidad de películas producidas
-        en cada país
-
-        Returns
-        -------
-        None.
-
-        """
-        df = self.df.copy()
-        plt.figure(figsize=(10,8))
-        country_production = df.groupby(['country']).count().sort_values('name', ascending = False).head(8)
-        sns.barplot(x=country_production.index, y ='name', data=country_production)
-        plt.xticks(rotation=45)
-        plt.xlabel('País de producción')
-        plt.ylabel('Películas')
-        plt.title('Cantidad de películas producidas por país', loc='left', fontsize=18, pad=20)
-        plt.show()
-
-
-
-    def plotCountryvsNumberByYear(self):
-        """
-        Método empleado para graficar la cantidad media de películas producidas
-        al año por cada país
-
-        Returns
-        -------
-        None.
-
-        """
-        df = self.df.copy()
-        plt.figure(figsize=(10,8))
-        country_production = df.groupby(['country','year']).count().groupby(['country'])['name'].median().to_frame().sort_values('name', ascending = False).head(8)
-        sns.barplot(x=country_production.index, y = 'name', data=country_production)
-        plt.xticks(rotation=45)
-        plt.xlabel('Género')
-        plt.ylabel('Películas')
-        plt.title('Cantidad media de películas producidas al año por país', loc='left', fontsize=18, pad=20)
-        plt.show() 
-
-
-
-
-    def plotGenrevsNumber(self):
-        """
-        Método empleado para graficar la cantidad de películas de cada género
-
-        Returns
-        -------
-        None.
-
-        """
-        df = self.df.copy()
-        plt.figure(figsize=(10,8))
-        country_production = df.groupby(['genre']).count().sort_values('name', ascending = False).head(8)
-        sns.barplot(x=country_production.index, y ='name', data=country_production)
-        plt.xticks(rotation=45)
-        plt.xlabel('Género')
-        plt.ylabel('Películas')
-        plt.title('Cantidad de películas por género', loc='left', fontsize=18, pad=20)
-        plt.show()                
-
-
 
     def plotGenrevsNumberByYear(self):
         """
@@ -1205,50 +901,28 @@ class MovieExplorer():
         
 #%%
 # Correlation analysis:
+class CorrelationAnalyzer():
+    def __init__(self, df):
+        self.df = df
+        
     def makeCorrAnalysis(self):
+        """
+        Metodo empleado a modo de pipeline para realizar el analisis de 
+        correlacion de las variables mas significativas.
+        Se excluye la variable income por ser dependiente de gross
+
+        Returns
+        -------
+        None.
+
+        """
         #Regression models:
-        self.plotRuntimevsBudgetRegression()
-        self.plotRuntimevsGrossRegression()
         self.plotBudgetvsGrossRegression()
         self.plotIMDBvsGrossRegression()
         self.plotIMDBvsBudgetRegression()
-        self.plotVotesvsGrossRegression()                
+        self.plotVotesvsGrossRegression() 
 
-        
-    def plotRuntimevsGrossRegression(self):
-        """
-        Método empleado para graficar la correlación entre la duración de 
-        cada película y su taquilla
-
-        Returns
-        -------
-        None.
-
-        """
-        df = self.df.copy()
-        sns.regplot(x='runtime',y='gross',data=df,scatter_kws={"color":"blue"},line_kws={"color":"red"})
-        plt.xlabel('Duración (en min)', labelpad=10, size=14)
-        plt.ylabel('Taquilla', labelpad=10, size=14)
-        plt.title('Taquilla según duración', size=20, pad=10)
-        plt.show()
-
-        
-    def plotRuntimevsBudgetRegression(self):
-        """
-        Método empleado para graficar la correlación entre el presupuesto de cada película
-        y su duración
-
-        Returns
-        -------
-        None.
-
-        """
-        df = self.df.copy()
-        sns.regplot(x='runtime',y='budget',data=df,scatter_kws={"color":"red"},line_kws={"color":"green"})
-        plt.xlabel('Duración (en min)', labelpad=10, size=14)
-        plt.ylabel('Presupuesto', labelpad=10, size=14)
-        plt.title('Presupuesto según duración', size=20, pad=10)
-        plt.show()
+    
 
     
     def plotBudgetvsGrossRegression(self):
@@ -1322,12 +996,32 @@ class MovieExplorer():
         plt.show()
         
 
+#%%
+    
+class MovieExplorer:
+    def __init__(self):
+        """
+        Clase empleada para a modo de pipeline para gestionar los diferentes analisis
+        realizados sobre el conjunto de datos de peliculas
 
+        Returns
+        -------
+        None.
+
+        """
+        self.df = DataProcessor().df.copy()
+    def startEDAnalysis(self):
+        eda = EDAAnalyzer(self.df)
+        eda.makeEDAnalysis()
+    def startCorrAnalysis(self):
+        corr = CorrelationAnalyzer(self.df)
+        corr.makeCorrAnalysis()
+    
 
 #%%
 if __name__ == "__main__":
-    #Read & clean data:
+    #Analisis del conjunto de datos de peliculas
     movieExplorer = MovieExplorer()
-    movieExplorer.makeEDAnalysis()
-    movieExplorer.makeCorrAnalysis()
+    movieExplorer.startEDAnalysis()
+    movieExplorer.startCorrAnalysis()
     
